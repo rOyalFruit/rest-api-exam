@@ -3,7 +3,10 @@ package com.example.rest.domain.post.post.controller;
 import com.example.rest.domain.post.post.entity.Post;
 import com.example.rest.domain.post.post.service.PostService;
 import com.example.rest.global.rsData.RsData;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +24,7 @@ public class ApiV1PostController {
     }
 
     @DeleteMapping("/{id}")
-    public RsData deleteItem(@PathVariable("id") long id){
+    public RsData deleteItem(@PathVariable("id") long id) {
         Post post = postService.findById(id).get();
         postService.delete(post);
 
@@ -29,15 +32,19 @@ public class ApiV1PostController {
     }
 
     record PostModifyReqBody(
-        String title,
-        String content
-    ){
+            @NotBlank
+            @Length(min = 2)
+            String title,
+            @NotBlank
+            @Length(min = 2)
+            String content
+    ) {
     }
 
     @PutMapping("/{id}")
     @Transactional
     public RsData modifyItem(@PathVariable("id") long id,
-                             @RequestBody PostModifyReqBody reqBody){
+                             @RequestBody @Valid PostModifyReqBody reqBody) {
         Post post = postService.findById(id).get();
         postService.modify(post, reqBody.title, reqBody.content);
 
