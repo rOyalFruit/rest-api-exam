@@ -1,5 +1,6 @@
 package com.example.rest.domain.post.post.controller;
 
+import com.example.rest.domain.post.post.dto.PostDto;
 import com.example.rest.domain.post.post.entity.Post;
 import com.example.rest.domain.post.post.service.PostService;
 import com.example.rest.global.rsData.RsData;
@@ -19,16 +20,32 @@ public class ApiV1PostController {
     private final PostService postService;
 
     @GetMapping
-    public List<Post> getItems() {
-        return postService.findAllByOrderByIdDesc();
+    public List<PostDto> getItems() {
+//        return postService.findAllByOrderByIdDesc();
+        return postService.findAllByOrderByIdDesc()
+                .stream()
+                .map(PostDto::new)
+                .toList();
+    }
+
+    @GetMapping("/{id}")
+    public PostDto getItem(@PathVariable long id) {
+//        Post post = postService.findById(id).get();
+//        return new PostDto(post);
+
+        return postService.findById(id)
+                .map(PostDto::new)
+                .orElseThrow();
     }
 
     @DeleteMapping("/{id}")
-    public RsData deleteItem(@PathVariable("id") long id) {
+    public RsData<Void> deleteItem(@PathVariable("id") long id) { // 제네릭이 Void면 null밖에 못넣음.
         Post post = postService.findById(id).get();
         postService.delete(post);
 
-        return new RsData("200-1", "%d번 글이 삭제되었습니다.".formatted(id));
+        return new RsData<>(
+                "200-1",
+                "%d번 글이 삭제되었습니다.".formatted(id));
     }
 
     record PostModifyReqBody(
@@ -43,11 +60,34 @@ public class ApiV1PostController {
 
     @PutMapping("/{id}")
     @Transactional
-    public RsData modifyItem(@PathVariable("id") long id,
+    public RsData<PostDto> modifyItem(@PathVariable("id") long id,
                              @RequestBody @Valid PostModifyReqBody reqBody) {
         Post post = postService.findById(id).get();
         postService.modify(post, reqBody.title, reqBody.content);
 
-        return new RsData("200-1", "%d번 글이 수정되었습니다.".formatted(id));
+        return new RsData<>(
+                "200-1",
+                "%d번 글이 수정되었습니다.".formatted(id),
+                new PostDto(post));
+    }
+
+    record PostWriteReqBody(
+            @NotBlank
+            @Length(min = 2)
+            String title,
+            @NotBlank
+            @Length(min = 2)
+            String content
+    ) {
+    }
+
+    @PostMapping
+    public RsData<Long> writeItem(@RequestBody @Valid PostModifyReqBody reqBody) {
+        Post post = postService.write(reqBody.title, reqBody.content);
+
+        return new RsData<>(
+                "200-1",
+                "%d번 글이 작성되었습니다.".formatted(post.getId()),
+                post.getId());
     }
 }
