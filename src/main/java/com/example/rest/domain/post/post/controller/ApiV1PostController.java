@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,13 +39,14 @@ public class ApiV1PostController {
     }
 
     @DeleteMapping("/{id}")
-    public RsData<Void> deleteItem(@PathVariable("id") long id) { // 제네릭이 Void면 null밖에 못넣음.
+    public RsData<Void> deleteItem(@PathVariable long id){ // 제네릭이 Void면 null밖에 못넣음.
         Post post = postService.findById(id).get();
         postService.delete(post);
 
         return new RsData<>(
                 "200-1",
-                "%d번 글이 삭제되었습니다.".formatted(id));
+                "%d번 글이 삭제되었습니다.".formatted(id)
+        );
     }
 
     record PostModifyReqBody(
@@ -73,6 +72,16 @@ public class ApiV1PostController {
                 new PostDto(post));
     }
 
+    record PostWriteReqBody(
+            @NotBlank
+            @Length(min = 2)
+            String title,
+            @NotBlank
+            @Length(min = 2)
+            String content
+    ) {
+    }
+
     record PostWriteResBody(
             PostDto item,
             long totalCount
@@ -80,19 +89,16 @@ public class ApiV1PostController {
     }
 
     @PostMapping
-    public ResponseEntity<RsData<PostWriteResBody>> writeItem(@RequestBody @Valid PostModifyReqBody reqBody) {
+    RsData<PostWriteResBody> writeItem(@RequestBody @Valid PostWriteReqBody reqBody) {
         Post post = postService.write(reqBody.title, reqBody.content);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new RsData<>(
-                                "200-1",
-                                "%d번 글이 작성되었습니다.".formatted(post.getId()),
-                                new PostWriteResBody(
-                                        new PostDto(post),
-                                        postService.count()
-                                )
-                        )
-                );
+        return new RsData<>(
+                "201-1",
+                "%d번 글이 작성되었습니다.".formatted(post.getId()),
+                new PostWriteResBody(
+                        new PostDto(post),
+                        postService.count()
+                )
+        );
     }
 }
