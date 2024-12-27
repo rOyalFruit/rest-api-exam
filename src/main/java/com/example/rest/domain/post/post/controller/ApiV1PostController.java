@@ -1,5 +1,7 @@
 package com.example.rest.domain.post.post.controller;
 
+import com.example.rest.domain.member.member.entity.Member;
+import com.example.rest.domain.member.member.service.MemberService;
 import com.example.rest.domain.post.post.dto.PostDto;
 import com.example.rest.domain.post.post.entity.Post;
 import com.example.rest.domain.post.post.service.PostService;
@@ -17,7 +19,9 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class ApiV1PostController {
+
     private final PostService postService;
+    private final MemberService memberService;
 
     @GetMapping
     public List<PostDto> getItems() {
@@ -90,7 +94,9 @@ public class ApiV1PostController {
 
     @PostMapping
     RsData<PostWriteResBody> writeItem(@RequestBody @Valid PostWriteReqBody reqBody) {
-        Post post = postService.write(reqBody.title, reqBody.content);
+
+        Member actor = memberService.findByUsername("user3").get();
+        Post post = postService.write(actor, reqBody.title, reqBody.content);
 
         return new RsData<>(
                 "201-1",
