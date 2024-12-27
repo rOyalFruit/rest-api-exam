@@ -53,4 +53,17 @@ public class GlobalExceptionHandler {
                         message
                 ));
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<RsData<Void>> handle(RuntimeException ex) {
+
+        if (AppConfig.isNotProd()) ex.printStackTrace(); // 운영모드가 아닐 때만 콘솔에 에러를 자세히 출력
+
+        return ResponseEntity // ResponseEntity: Spring에서 HTTP 응답을 생성하기 위해 사용하는 클래스. HTTP 상태 코드와 응답 본문(body)을 설정할 수 있음.
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new RsData<>(
+                        "400-1",
+                        ex.getMessage()
+                ));
+    }
 }

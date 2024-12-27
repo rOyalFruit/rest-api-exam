@@ -18,8 +18,8 @@ public class PostDto {
 
     public PostDto(Post post) {
         this.id = post.getId();
-        this.createAt = post.getCreatedAt();
-        this.modifyAt  = post.getModifiedAt();
+        this.createAt = post.getCreateDate();
+        this.modifyAt  = post.getModifyDate();
         this.title = post.getTitle();
         this.content = post.getContent();
     }
