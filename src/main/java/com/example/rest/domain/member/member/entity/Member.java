@@ -18,4 +18,8 @@ public class Member extends BaseTime {
     private String password;
     @Column(length = 30)
     private String nickname;
+
+    public String getName() {
+        return this.nickname;
+    }
 }
