@@ -1,5 +1,6 @@
 package com.example.rest.global.globalExceptionHandler;
 
+import com.example.rest.global.app.AppConfig;
 import com.example.rest.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,9 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class) // @ExceptionHandler: 특정 예외를 처리하기 위한 메서드에 붙이는 어노테이션
     public ResponseEntity<RsData<Void>> handle(NoSuchElementException ex) { // NoSuchElementException(컬렉션이나 Optional 등에서 값을 찾지 못했을 때 발생)이 발생했을 때 실행됨.
+
+        if (AppConfig.isNotProd()) ex.printStackTrace(); // 운영모드가 아닐 때만 콘솔에 에러를 자세히 출력
+
         return ResponseEntity // ResponseEntity: Spring에서 HTTP 응답을 생성하기 위해 사용하는 클래스. HTTP 상태 코드와 응답 본문(body)을 설정할 수 있음.
                 .status(HttpStatus.NOT_FOUND)
                 .body(new RsData<>(
@@ -30,6 +34,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RsData<Void>> handle(MethodArgumentNotValidException ex) {
+
+        if (AppConfig.isNotProd()) ex.printStackTrace();
+
         String message = ex.getBindingResult()
                 .getAllErrors()
                 .stream()
